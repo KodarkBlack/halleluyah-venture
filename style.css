@@ -1,0 +1,44 @@
+
+.background {
+    background-color: #D3E1E2;
+}
+.container {
+    width: screen;
+    height: inherit;
+    padding: 10px;
+    background-color: #D3E1E2;
+}
+
+input[type="text"] {
+    width: 100%;
+    padding: 8px;
+}
+
+#creditform button {
+    background: #656565;
+    border: none;
+    border-radius: 10px;
+    color:#fff ;
+    padding: 8px 16px;
+    font-size: 15px;
+}
+
+#creditform {
+    display: grid;
+    gap: 10%;
+}
+
+
+
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+
+th, td {
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+    text-align: center;
+}
