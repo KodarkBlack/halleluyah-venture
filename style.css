@@ -1,7 +1,12 @@
+@import url('https://fonts.googleapis.com/css2?family=Handjet:wght@300&family=Inter&family=Oswald&display=swap');
 
 .background {
     background-color: #D3E1E2;
 }
+
+
+
+
 .container {
     width: screen;
     height: inherit;
@@ -14,6 +19,12 @@ input[type="text"] {
     padding: 8px;
 }
 
+input[type="number"] {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 5%;
+}
+
 #creditform button {
     background: #656565;
     border: none;
@@ -21,11 +32,12 @@ input[type="text"] {
     color:#fff ;
     padding: 8px 16px;
     font-size: 15px;
+    display: grid;
+    width: 100%;
 }
 
-#creditform {
-    display: grid;
-    gap: 10%;
+#creditform button:hover {
+
 }
 
 
