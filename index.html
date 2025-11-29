@@ -2160,14 +2160,18 @@
             </div>
         </div>
     </div>
-
+<!-- 
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script> -->
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script>
     // Firebase Configuration
     const firebaseConfig = {
         apiKey: "AIzaSyDdR38G9u-DpGhH-6avCxQVYfC98Bq5W-I",
         authDomain: "crm128.firebaseapp.com",
+        databaseURL: "https://crm128-default-rtdb.firebaseio.com", // Add this line
         projectId: "crm128",
         storageBucket: "crm128.appspot.com",
         messagingSenderId: "444897205970",
@@ -2177,13 +2181,7 @@
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
-    const db = firebase.firestore();
-
-    // Enable offline persistence
-    db.enablePersistence()
-      .catch((err) => {
-          console.log('Persistence failed: ', err);
-      });
+    const database = firebase.database(); // Realtime Database
 
     // Current business context
     let currentBusiness = "halleluyah";
@@ -2194,35 +2192,10 @@
     const loginScreen = document.getElementById('loginScreen');
     const dashboard = document.getElementById('dashboard');
     const onboardingScreen = document.getElementById('onboardingScreen');
-    const loginBtn = document.getElementById('loginBtn');
-    const registerBtn = document.getElementById('registerBtn');
-    const createDemoBtn = document.getElementById('createDemoBtn');
-    const loginText = document.getElementById('loginText');
-    const loginSpinner = document.getElementById('loginSpinner');
-    const registerText = document.getElementById('registerText');
-    const registerSpinner = document.getElementById('registerSpinner');
-    const tenantSelect = document.getElementById('tenantSelect');
-    const newTenantForm = document.getElementById('newTenantForm');
-    const businessNameHeader = document.getElementById('businessNameHeader');
-    const currentBusinessElement = document.getElementById('currentBusiness');
-    const userEmailElement = document.getElementById('userEmail');
-    const switchBusinessSelect = document.getElementById('switchBusinessSelect');
-    const switchNewBusinessForm = document.getElementById('switchNewBusinessForm');
-    const switchBusinessBtn = document.getElementById('switchBusinessBtn');
-    const themeToggle = document.getElementById('themeToggle');
-    const themeSelector = document.getElementById('themeSelector');
-    const themeIcon = document.getElementById('themeIcon');
-    const confirmModal = document.getElementById('confirmModal');
-    const confirmTitle = document.getElementById('confirmTitle');
-    const confirmMessage = document.getElementById('confirmMessage');
-    const confirmCancel = document.getElementById('confirmCancel');
-    const confirmOk = document.getElementById('confirmOk');
-    const skipOnboarding = document.getElementById('skipOnboarding');
-    const startOnboarding = document.getElementById('startOnboarding');
 
     // Initialize the application
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('App initialized');
+        console.log('App initialized with Realtime Database');
         
         // Check if user is already logged in
         const savedBusiness = localStorage.getItem('currentBusiness');
@@ -2239,215 +2212,53 @@
                     currentBusinessName = localStorage.getItem('currentBusinessName') || "Halleluyah Venture";
                     showDashboard();
                 }
-            } else {
-                console.log('No user logged in');
             }
         });
 
         // Event Listeners
-        loginBtn.addEventListener('click', handleLogin);
-        registerBtn.addEventListener('click', handleRegister);
-        createDemoBtn.addEventListener('click', createDemoAccount);
+        document.getElementById('loginBtn').addEventListener('click', handleLogin);
+        document.getElementById('registerBtn').addEventListener('click', handleRegister);
+        document.getElementById('createDemoBtn').addEventListener('click', createDemoAccount);
         document.getElementById('logoutBtn').addEventListener('click', handleLogout);
-        tenantSelect.addEventListener('change', toggleNewTenantForm);
-        switchBusinessSelect.addEventListener('change', toggleSwitchNewBusinessForm);
-        switchBusinessBtn.addEventListener('click', handleSwitchBusiness);
-        themeToggle.addEventListener('click', toggleThemeSelector);
-        confirmCancel.addEventListener('click', hideConfirmModal);
-        skipOnboarding.addEventListener('click', skipOnboardingTour);
-        startOnboarding.addEventListener('click', startOnboardingTour);
+        document.getElementById('tenantSelect').addEventListener('change', toggleNewTenantForm);
+        document.getElementById('switchBusinessSelect').addEventListener('change', toggleSwitchNewBusinessForm);
+        document.getElementById('switchBusinessBtn').addEventListener('click', handleSwitchBusiness);
+        document.getElementById('themeToggle').addEventListener('click', toggleThemeSelector);
+        document.getElementById('confirmCancel').addEventListener('click', hideConfirmModal);
+        document.getElementById('skipOnboarding').addEventListener('click', skipOnboardingTour);
+        document.getElementById('startOnboarding').addEventListener('click', startOnboardingTour);
         
         // Theme selector
         document.querySelectorAll('.theme-option').forEach(option => {
             option.addEventListener('click', function() {
                 const theme = this.getAttribute('data-theme');
                 setTheme(theme);
-                
-                document.querySelectorAll('.theme-option').forEach(opt => {
-                    opt.classList.remove('active');
-                });
+                document.querySelectorAll('.theme-option').forEach(opt => opt.classList.remove('active'));
                 this.classList.add('active');
-                
-                themeSelector.classList.remove('show');
+                document.getElementById('themeSelector').classList.remove('show');
             });
         });
         
-        // Tab switching
-        $('#authTabs a').on('click', function (e) {
-            e.preventDefault();
-            $(this).tab('show');
-        });
-
         // Section navigation
         document.querySelectorAll('.sidebar-menu li').forEach(item => {
             item.addEventListener('click', function() {
                 const section = this.getAttribute('data-section');
-                
                 document.querySelectorAll('.sidebar-menu li').forEach(i => i.classList.remove('active'));
                 this.classList.add('active');
-                
                 showSection(section);
             });
         });
-        
-        // Toggle sidebar on mobile
-        document.querySelector('.toggle-sidebar').addEventListener('click', function() {
-            const sidebar = document.querySelector('.sidebar');
-            const mainContent = document.querySelector('.main-content');
-            
-            if (sidebar.style.width === '70px' || sidebar.style.width === '') {
-                sidebar.style.width = '250px';
-                mainContent.style.marginLeft = '250px';
-            } else {
-                sidebar.style.width = '70px';
-                mainContent.style.marginLeft = '70px';
-            }
-        });
 
-        // Add item to buy list
-        document.getElementById('saveItem').addEventListener('click', function() {
-            const itemName = document.getElementById('itemName').value;
-            const itemQuantity = document.getElementById('itemQuantity').value;
-            const itemPriority = document.getElementById('itemPriority').value;
-            
-            if (itemName && itemQuantity) {
-                addBuyListItem(itemName, itemQuantity, itemPriority);
-                $('#addItemModal').modal('hide');
-                document.getElementById('addItemForm').reset();
-            } else {
-                showAlert('Please fill in all fields', 'warning');
-            }
-        });
-
-        // Add product
-        document.getElementById('saveProduct').addEventListener('click', function() {
-            const productName = document.getElementById('productName').value;
-            const productCategory = document.getElementById('productCategory').value;
-            const productStock = parseInt(document.getElementById('productStock').value);
-            const productPrice = parseFloat(document.getElementById('productPrice').value);
-            const productCost = parseFloat(document.getElementById('productCost').value);
-            
-            if (productName && productCategory && productStock && productPrice && productCost) {
-                addProduct(productName, productCategory, productStock, productPrice, productCost);
-                $('#addProductModal').modal('hide');
-                document.getElementById('addProductForm').reset();
-            } else {
-                showAlert('Please fill in all fields', 'warning');
-            }
-        });
-
-        // Update product
-        document.getElementById('updateProduct').addEventListener('click', function() {
-            const productId = document.getElementById('editProductId').value;
-            const productName = document.getElementById('editProductName').value;
-            const productCategory = document.getElementById('editProductCategory').value;
-            const productStock = parseInt(document.getElementById('editProductStock').value);
-            const productPrice = parseFloat(document.getElementById('editProductPrice').value);
-            const productCost = parseFloat(document.getElementById('editProductCost').value);
-            
-            if (productName && productCategory && productStock && productPrice && productCost) {
-                updateProduct(productId, productName, productCategory, productStock, productPrice, productCost);
-                $('#editProductModal').modal('hide');
-            } else {
-                showAlert('Please fill in all fields', 'warning');
-            }
-        });
-
-        // Add task
-        document.getElementById('saveTask').addEventListener('click', function() {
-            const taskTitle = document.getElementById('taskTitle').value;
-            const taskDescription = document.getElementById('taskDescription').value;
-            const taskDueDate = document.getElementById('taskDueDate').value;
-            const taskPriority = document.getElementById('taskPriority').value;
-            
-            if (taskTitle && taskDueDate) {
-                addTask(taskTitle, taskDescription, taskDueDate, taskPriority);
-                $('#addTaskModal').modal('hide');
-                document.getElementById('addTaskForm').reset();
-            } else {
-                showAlert('Please fill in all fields', 'warning');
-            }
-        });
-
-        // Add sale
-        document.getElementById('saveSale').addEventListener('click', function() {
-            const productId = document.getElementById('saleProduct').value;
-            const quantity = parseInt(document.getElementById('saleQuantity').value);
-            const unitPrice = parseFloat(document.getElementById('saleUnitPrice').value);
-            const customer = document.getElementById('saleCustomer').value;
-            const saleDate = document.getElementById('saleDate').value;
-            
-            if (productId && quantity && unitPrice && saleDate) {
-                addSale(productId, quantity, unitPrice, customer, saleDate);
-                $('#addSaleModal').modal('hide');
-                document.getElementById('addSaleForm').reset();
-            } else {
-                showAlert('Please fill in all fields', 'warning');
-            }
-        });
-
-        // Add purchase
-        document.getElementById('savePurchase').addEventListener('click', function() {
-            const productName = document.getElementById('purchaseProduct').value;
-            const quantity = parseInt(document.getElementById('purchaseQuantity').value);
-            const unitCost = parseFloat(document.getElementById('purchaseUnitCost').value);
-            const supplier = document.getElementById('purchaseSupplier').value;
-            const purchaseDate = document.getElementById('purchaseDate').value;
-            
-            if (productName && quantity && unitCost && purchaseDate) {
-                addPurchase(productName, quantity, unitCost, supplier, purchaseDate);
-                $('#addPurchaseModal').modal('hide');
-                document.getElementById('addPurchaseForm').reset();
-            } else {
-                showAlert('Please fill in all fields', 'warning');
-            }
-        });
-
-        // Add credit
-        document.getElementById('saveCredit').addEventListener('click', function() {
-            const description = document.getElementById('creditDescription').value;
-            const amount = parseFloat(document.getElementById('creditAmount').value);
-            const creditDate = document.getElementById('creditDate').value;
-            
-            if (description && amount && creditDate) {
-                addCredit(description, amount, creditDate);
-                $('#addCreditModal').modal('hide');
-                document.getElementById('addCreditForm').reset();
-            } else {
-                showAlert('Please fill in all fields', 'warning');
-            }
-        });
-
-        // Add debit
-        document.getElementById('saveDebit').addEventListener('click', function() {
-            const description = document.getElementById('debitDescription').value;
-            const amount = parseFloat(document.getElementById('debitAmount').value);
-            const debitDate = document.getElementById('debitDate').value;
-            
-            if (description && amount && debitDate) {
-                addDebit(description, amount, debitDate);
-                $('#addDebitModal').modal('hide');
-                document.getElementById('addDebitForm').reset();
-            } else {
-                showAlert('Please fill in all fields', 'warning');
-            }
-        });
-
-        // Add event
-        document.getElementById('saveEvent').addEventListener('click', function() {
-            const title = document.getElementById('eventTitle').value;
-            const description = document.getElementById('eventDescription').value;
-            const startDate = document.getElementById('eventStartDate').value;
-            const endDate = document.getElementById('eventEndDate').value;
-            
-            if (title && startDate && endDate) {
-                addEvent(title, description, startDate, endDate);
-                $('#addEventModal').modal('hide');
-                document.getElementById('addEventForm').reset();
-            } else {
-                showAlert('Please fill in all fields', 'warning');
-            }
-        });
+        // Form submissions
+        document.getElementById('saveItem').addEventListener('click', addItemHandler);
+        document.getElementById('saveProduct').addEventListener('click', addProductHandler);
+        document.getElementById('updateProduct').addEventListener('click', updateProductHandler);
+        document.getElementById('saveTask').addEventListener('click', addTaskHandler);
+        document.getElementById('saveSale').addEventListener('click', addSaleHandler);
+        document.getElementById('savePurchase').addEventListener('click', addPurchaseHandler);
+        document.getElementById('saveCredit').addEventListener('click', addCreditHandler);
+        document.getElementById('saveDebit').addEventListener('click', addDebitHandler);
+        document.getElementById('saveEvent').addEventListener('click', addEventHandler);
 
         // Load initial data
         if (savedBusiness) {
@@ -2459,7 +2270,7 @@
     async function handleLogin() {
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
-        const tenant = tenantSelect.value;
+        const tenant = document.getElementById('tenantSelect').value;
         
         if (!email || !password) {
             showAlert('Please enter email and password', 'warning');
@@ -2467,9 +2278,9 @@
         }
         
         // Show loading state
-        loginText.style.display = 'none';
-        loginSpinner.style.display = 'inline-block';
-        loginBtn.disabled = true;
+        document.getElementById('loginText').style.display = 'none';
+        document.getElementById('loginSpinner').style.display = 'inline-block';
+        document.getElementById('loginBtn').disabled = true;
 
         try {
             if (tenant === 'new') {
@@ -2502,34 +2313,12 @@
             showDashboard();
         } catch (error) {
             console.error('Login error:', error);
-            let errorMessage = 'Login failed: ';
-            
-            switch (error.code) {
-                case 'auth/invalid-email':
-                    errorMessage += 'Invalid email address';
-                    break;
-                case 'auth/user-disabled':
-                    errorMessage += 'This account has been disabled';
-                    break;
-                case 'auth/user-not-found':
-                    errorMessage += 'No account found with this email';
-                    break;
-                case 'auth/wrong-password':
-                    errorMessage += 'Incorrect password';
-                    break;
-                case 'auth/invalid-login-credentials':
-                    errorMessage += 'Invalid login credentials';
-                    break;
-                default:
-                    errorMessage += error.message;
-            }
-            
-            showAlert(errorMessage, 'danger');
+            showAlert('Login failed: ' + error.message, 'danger');
         } finally {
             // Reset loading state
-            loginText.style.display = 'inline';
-            loginSpinner.style.display = 'none';
-            loginBtn.disabled = false;
+            document.getElementById('loginText').style.display = 'inline';
+            document.getElementById('loginSpinner').style.display = 'none';
+            document.getElementById('loginBtn').disabled = false;
         }
     }
 
@@ -2558,9 +2347,9 @@
         }
         
         // Show loading state
-        registerText.style.display = 'none';
-        registerSpinner.style.display = 'inline-block';
-        registerBtn.disabled = true;
+        document.getElementById('registerText').style.display = 'none';
+        document.getElementById('registerSpinner').style.display = 'inline-block';
+        document.getElementById('registerBtn').disabled = true;
 
         try {
             console.log('Starting registration process...');
@@ -2571,34 +2360,38 @@
             
             console.log('User created:', currentUser.uid);
             
-            // Create business in Firestore
+            // Create business in Realtime Database
             currentBusiness = businessName.toLowerCase().replace(/\s+/g, '_');
             currentBusinessName = businessName;
             
-            console.log('Creating business:', currentBusiness);
+            console.log('Creating business in Realtime DB:', currentBusiness);
             
-            await db.collection('businesses').doc(currentBusiness).set({
+            // Save business data to Realtime Database
+            await database.ref('businesses/' + currentBusiness).set({
                 name: businessName,
                 type: businessType,
                 owner: currentUser.uid,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                users: [{
-                    uid: currentUser.uid,
-                    email: email,
-                    name: fullName,
-                    role: 'owner',
-                    joinedAt: firebase.firestore.FieldValue.serverTimestamp()
-                }]
+                createdAt: Date.now(),
+                users: {
+                    [currentUser.uid]: {
+                        email: email,
+                        name: fullName,
+                        role: 'owner',
+                        joinedAt: Date.now()
+                    }
+                }
             });
             
-            console.log('Business document created');
+            console.log('Business created in Realtime Database');
             
             // Create user profile
-            await db.collection('users').doc(currentUser.uid).set({
+            await database.ref('users/' + currentUser.uid).set({
                 email: email,
                 name: fullName,
-                businesses: [currentBusiness],
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                businesses: {
+                    [currentBusiness]: true
+                },
+                createdAt: Date.now()
             });
             
             console.log('User profile created');
@@ -2614,31 +2407,12 @@
             
         } catch (error) {
             console.error('Registration error:', error);
-            let errorMessage = 'Registration failed: ';
-            
-            switch (error.code) {
-                case 'auth/email-already-in-use':
-                    errorMessage += 'Email already in use';
-                    break;
-                case 'auth/invalid-email':
-                    errorMessage += 'Invalid email address';
-                    break;
-                case 'auth/operation-not-allowed':
-                    errorMessage += 'Operation not allowed';
-                    break;
-                case 'auth/weak-password':
-                    errorMessage += 'Password is too weak';
-                    break;
-                default:
-                    errorMessage += error.message;
-            }
-            
-            showAlert(errorMessage, 'danger');
+            showAlert('Registration failed: ' + error.message, 'danger');
         } finally {
             // Reset loading state
-            registerText.style.display = 'inline';
-            registerSpinner.style.display = 'none';
-            registerBtn.disabled = false;
+            document.getElementById('registerText').style.display = 'inline';
+            document.getElementById('registerSpinner').style.display = 'none';
+            document.getElementById('registerBtn').disabled = false;
         }
     }
 
@@ -2649,9 +2423,9 @@
         
         try {
             // Show loading state
-            loginText.style.display = 'none';
-            loginSpinner.style.display = 'inline-block';
-            loginBtn.disabled = true;
+            document.getElementById('loginText').style.display = 'none';
+            document.getElementById('loginSpinner').style.display = 'inline-block';
+            document.getElementById('loginBtn').disabled = true;
             
             console.log('Creating demo account...');
             
@@ -2661,32 +2435,35 @@
             
             console.log('Demo user created:', currentUser.uid);
             
-            // Create demo business
+            // Create demo business in Realtime Database
             currentBusiness = demoBusiness;
             currentBusinessName = "Demo Business";
             
-            await db.collection('businesses').doc(currentBusiness).set({
+            await database.ref('businesses/' + currentBusiness).set({
                 name: "Demo Business",
                 type: "retail",
                 owner: currentUser.uid,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                users: [{
-                    uid: currentUser.uid,
-                    email: demoEmail,
-                    name: "Demo User",
-                    role: 'owner',
-                    joinedAt: firebase.firestore.FieldValue.serverTimestamp()
-                }]
+                createdAt: Date.now(),
+                users: {
+                    [currentUser.uid]: {
+                        email: demoEmail,
+                        name: "Demo User",
+                        role: 'owner',
+                        joinedAt: Date.now()
+                    }
+                }
             });
             
-            console.log('Demo business created');
+            console.log('Demo business created in Realtime Database');
             
             // Create user profile
-            await db.collection('users').doc(currentUser.uid).set({
+            await database.ref('users/' + currentUser.uid).set({
                 email: demoEmail,
                 name: "Demo User",
-                businesses: [currentBusiness],
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                businesses: {
+                    [currentBusiness]: true
+                },
+                createdAt: Date.now()
             });
             
             // Initialize sample data
@@ -2707,15 +2484,15 @@
             showAlert('Failed to create demo account: ' + error.message, 'danger');
         } finally {
             // Reset loading state
-            loginText.style.display = 'inline';
-            loginSpinner.style.display = 'none';
-            loginBtn.disabled = false;
+            document.getElementById('loginText').style.display = 'inline';
+            document.getElementById('loginSpinner').style.display = 'none';
+            document.getElementById('loginBtn').disabled = false;
         }
     }
 
     async function initializeSampleData() {
         try {
-            console.log('Initializing sample data...');
+            console.log('Initializing sample data in Realtime Database...');
             
             // Add sample products
             const sampleProducts = [
@@ -2726,7 +2503,7 @@
                     sellingPrice: 25000,
                     costPrice: 22000,
                     minStock: 10,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    createdAt: Date.now()
                 },
                 {
                     name: "Cooking Oil (5L)",
@@ -2735,7 +2512,7 @@
                     sellingPrice: 4500,
                     costPrice: 3800,
                     minStock: 5,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    createdAt: Date.now()
                 },
                 {
                     name: "Tomato Paste",
@@ -2744,12 +2521,13 @@
                     sellingPrice: 1200,
                     costPrice: 900,
                     minStock: 20,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    createdAt: Date.now()
                 }
             ];
 
             for (const product of sampleProducts) {
-                await db.collection('businesses').doc(currentBusiness).collection('products').add(product);
+                const productRef = database.ref('businesses/' + currentBusiness + '/products').push();
+                await productRef.set(product);
             }
 
             console.log('Sample products added');
@@ -2759,23 +2537,24 @@
                 {
                     title: "Restock cooking oil",
                     description: "Order more cooking oil from supplier",
-                    dueDate: firebase.firestore.Timestamp.fromDate(new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)),
+                    dueDate: Date.now() + 2 * 24 * 60 * 60 * 1000,
                     priority: "high",
                     completed: false,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    createdAt: Date.now()
                 },
                 {
                     title: "Monthly inventory audit",
                     description: "Conduct full inventory count",
-                    dueDate: firebase.firestore.Timestamp.fromDate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)),
+                    dueDate: Date.now() + 7 * 24 * 60 * 60 * 1000,
                     priority: "medium",
                     completed: false,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    createdAt: Date.now()
                 }
             ];
 
             for (const task of sampleTasks) {
-                await db.collection('businesses').doc(currentBusiness).collection('tasks').add(task);
+                const taskRef = database.ref('businesses/' + currentBusiness + '/tasks').push();
+                await taskRef.set(task);
             }
 
             console.log('Sample tasks added');
@@ -2787,23 +2566,24 @@
                     quantity: 2,
                     priority: "medium",
                     completed: false,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    createdAt: Date.now()
                 },
                 {
                     name: "Flour (50kg)",
                     quantity: 1,
                     priority: "high",
                     completed: false,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    createdAt: Date.now()
                 }
             ];
 
             for (const item of sampleBuyList) {
-                await db.collection('businesses').doc(currentBusiness).collection('buyList').add(item);
+                const itemRef = database.ref('businesses/' + currentBusiness + '/buyList').push();
+                await itemRef.set(item);
             }
 
             console.log('Sample buy list items added');
-            console.log('Sample data initialized successfully');
+            console.log('Sample data initialized successfully in Realtime Database');
         } catch (error) {
             console.error('Error initializing sample data:', error);
         }
@@ -2817,8 +2597,8 @@
                 auth.signOut().then(() => {
                     localStorage.removeItem('currentBusiness');
                     localStorage.removeItem('currentBusinessName');
-                    dashboard.style.display = 'none';
-                    loginScreen.style.display = 'block';
+                    document.getElementById('dashboard').style.display = 'none';
+                    document.getElementById('loginScreen').style.display = 'block';
                     currentUser = null;
                     showAlert('Logged out successfully', 'success');
                 }).catch(error => {
@@ -2831,15 +2611,15 @@
 
     function showDashboard() {
         console.log('Showing dashboard');
-        loginScreen.style.display = 'none';
-        dashboard.style.display = 'block';
-        onboardingScreen.classList.remove('active');
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+        document.getElementById('onboardingScreen').classList.remove('active');
         
         // Update UI with current business info
-        businessNameHeader.textContent = currentBusinessName;
-        currentBusinessElement.textContent = currentBusinessName;
+        document.getElementById('businessNameHeader').textContent = currentBusinessName;
+        document.getElementById('currentBusiness').textContent = currentBusinessName;
         if (currentUser) {
-            userEmailElement.textContent = currentUser.email;
+            document.getElementById('userEmail').textContent = currentUser.email;
         }
         
         // Load business data
@@ -2847,9 +2627,9 @@
     }
 
     function showOnboarding() {
-        loginScreen.style.display = 'none';
-        dashboard.style.display = 'none';
-        onboardingScreen.classList.add('active');
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'none';
+        document.getElementById('onboardingScreen').classList.add('active');
     }
 
     function skipOnboardingTour() {
@@ -2871,27 +2651,51 @@
         const sectionElement = document.getElementById(section + 'Content');
         if (sectionElement) {
             sectionElement.classList.add('active');
+            loadSectionData(section);
+        }
+    }
+
+    function loadSectionData(section) {
+        switch(section) {
+            case 'inventory':
+                loadInventorySection();
+                break;
+            case 'sales':
+                loadSalesSection();
+                break;
+            case 'purchases':
+                loadPurchasesSection();
+                break;
+            case 'finance':
+                loadFinanceSection();
+                break;
+            case 'tasks':
+                loadTasksSection();
+                break;
+            case 'buy-list':
+                loadBuyListSection();
+                break;
         }
     }
 
     function toggleNewTenantForm() {
-        if (tenantSelect.value === 'new') {
-            newTenantForm.style.display = 'block';
+        if (document.getElementById('tenantSelect').value === 'new') {
+            document.getElementById('newTenantForm').style.display = 'block';
         } else {
-            newTenantForm.style.display = 'none';
+            document.getElementById('newTenantForm').style.display = 'none';
         }
     }
 
     function toggleSwitchNewBusinessForm() {
-        if (switchBusinessSelect.value === 'new') {
-            switchNewBusinessForm.style.display = 'block';
+        if (document.getElementById('switchBusinessSelect').value === 'new') {
+            document.getElementById('switchNewBusinessForm').style.display = 'block';
         } else {
-            switchNewBusinessForm.style.display = 'none';
+            document.getElementById('switchNewBusinessForm').style.display = 'none';
         }
     }
 
     function handleSwitchBusiness() {
-        const business = switchBusinessSelect.value;
+        const business = document.getElementById('switchBusinessSelect').value;
         
         if (business === 'new') {
             const businessName = document.getElementById('newBusinessName').value;
@@ -2913,8 +2717,8 @@
         localStorage.setItem('currentBusinessName', currentBusinessName);
         
         // Update UI
-        businessNameHeader.textContent = currentBusinessName;
-        currentBusinessElement.textContent = currentBusinessName;
+        document.getElementById('businessNameHeader').textContent = currentBusinessName;
+        document.getElementById('currentBusiness').textContent = currentBusinessName;
         
         // Load new business data
         loadBusinessData();
@@ -2923,26 +2727,25 @@
     }
 
     function toggleThemeSelector() {
-        themeSelector.classList.toggle('show');
+        document.getElementById('themeSelector').classList.toggle('show');
     }
 
     function setTheme(theme) {
         document.documentElement.setAttribute('data-theme', theme);
         localStorage.setItem('theme', theme);
-        themeIcon.className = theme === 'light' ? 'fas fa-sun' : 
+        document.getElementById('themeIcon').className = theme === 'light' ? 'fas fa-sun' : 
                              theme === 'dark' ? 'fas fa-moon' :
                              theme === 'premium' ? 'fas fa-crown' : 'fas fa-leaf';
     }
 
     // Custom Confirmation Modal
     function showConfirmModal(title, message, onConfirm) {
-        confirmTitle.textContent = title;
-        confirmMessage.textContent = message;
-        confirmModal.classList.add('show');
+        document.getElementById('confirmTitle').textContent = title;
+        document.getElementById('confirmMessage').textContent = message;
+        document.getElementById('confirmModal').classList.add('show');
         
-        // Remove previous event listeners
-        confirmOk.replaceWith(confirmOk.cloneNode(true));
-        const newConfirmOk = document.getElementById('confirmOk');
+        const newConfirmOk = document.getElementById('confirmOk').cloneNode(true);
+        document.getElementById('confirmOk').parentNode.replaceChild(newConfirmOk, document.getElementById('confirmOk'));
         
         newConfirmOk.addEventListener('click', function() {
             hideConfirmModal();
@@ -2951,7 +2754,7 @@
     }
 
     function hideConfirmModal() {
-        confirmModal.classList.remove('show');
+        document.getElementById('confirmModal').classList.remove('show');
     }
 
     // Alert System
@@ -2989,10 +2792,7 @@
     // Real-time Data Functions
     function loadBusinessData() {
         console.log('Loading business data for:', currentBusiness);
-        // Set up real-time listeners for all collections
         setupRealtimeListeners();
-        
-        // Initialize charts
         initializeCharts();
     }
 
@@ -3000,113 +2800,74 @@
         console.log('Setting up real-time listeners for business:', currentBusiness);
         
         // Products listener
-        db.collection('businesses').doc(currentBusiness).collection('products')
-            .onSnapshot(snapshot => {
-                console.log('Products updated:', snapshot.size, 'products');
-                const products = [];
-                snapshot.forEach(doc => {
-                    products.push({ id: doc.id, ...doc.data() });
-                });
-                updateInventoryTable(products);
-                updateDashboardCards(products);
-                updateCharts(products);
-                
-                // Update product dropdown for sales
-                updateProductDropdown(products);
-            }, error => {
-                console.error('Error listening to products:', error);
+        database.ref('businesses/' + currentBusiness + '/products').on('value', (snapshot) => {
+            const products = [];
+            snapshot.forEach((childSnapshot) => {
+                products.push({ id: childSnapshot.key, ...childSnapshot.val() });
             });
-
-        // Sales listener
-        db.collection('businesses').doc(currentBusiness).collection('sales')
-            .onSnapshot(snapshot => {
-                console.log('Sales updated:', snapshot.size, 'sales');
-                const sales = [];
-                snapshot.forEach(doc => {
-                    sales.push({ id: doc.id, ...doc.data() });
-                });
-                updateSalesData(sales);
-            }, error => {
-                console.error('Error listening to sales:', error);
-            });
-
-        // Purchases listener
-        db.collection('businesses').doc(currentBusiness).collection('purchases')
-            .onSnapshot(snapshot => {
-                console.log('Purchases updated:', snapshot.size, 'purchases');
-                const purchases = [];
-                snapshot.forEach(doc => {
-                    purchases.push({ id: doc.id, ...doc.data() });
-                });
-                updatePurchasesData(purchases);
-            }, error => {
-                console.error('Error listening to purchases:', error);
-            });
+            console.log('Products updated:', products.length, 'products');
+            updateInventoryTable(products);
+            updateDashboardCards(products);
+            updateCharts(products);
+            updateProductDropdown(products);
+        });
 
         // Buy list listener
-        db.collection('businesses').doc(currentBusiness).collection('buyList')
-            .onSnapshot(snapshot => {
-                console.log('Buy list updated:', snapshot.size, 'items');
-                const buyList = [];
-                snapshot.forEach(doc => {
-                    buyList.push({ id: doc.id, ...doc.data() });
-                });
-                updateBuyList(buyList);
-            }, error => {
-                console.error('Error listening to buy list:', error);
+        database.ref('businesses/' + currentBusiness + '/buyList').on('value', (snapshot) => {
+            const buyList = [];
+            snapshot.forEach((childSnapshot) => {
+                buyList.push({ id: childSnapshot.key, ...childSnapshot.val() });
             });
+            console.log('Buy list updated:', buyList.length, 'items');
+            updateBuyList(buyList);
+        });
 
         // Tasks listener
-        db.collection('businesses').doc(currentBusiness).collection('tasks')
-            .onSnapshot(snapshot => {
-                console.log('Tasks updated:', snapshot.size, 'tasks');
-                const tasks = [];
-                snapshot.forEach(doc => {
-                    tasks.push({ id: doc.id, ...doc.data() });
-                });
-                updateTasks(tasks);
-            }, error => {
-                console.error('Error listening to tasks:', error);
+        database.ref('businesses/' + currentBusiness + '/tasks').on('value', (snapshot) => {
+            const tasks = [];
+            snapshot.forEach((childSnapshot) => {
+                tasks.push({ id: childSnapshot.key, ...childSnapshot.val() });
             });
+            console.log('Tasks updated:', tasks.length, 'tasks');
+            updateTasks(tasks);
+        });
+
+        // Sales listener
+        database.ref('businesses/' + currentBusiness + '/sales').on('value', (snapshot) => {
+            const sales = [];
+            snapshot.forEach((childSnapshot) => {
+                sales.push({ id: childSnapshot.key, ...childSnapshot.val() });
+            });
+            console.log('Sales updated:', sales.length, 'sales');
+            updateSalesData(sales);
+        });
+
+        // Purchases listener
+        database.ref('businesses/' + currentBusiness + '/purchases').on('value', (snapshot) => {
+            const purchases = [];
+            snapshot.forEach((childSnapshot) => {
+                purchases.push({ id: childSnapshot.key, ...childSnapshot.val() });
+            });
+            console.log('Purchases updated:', purchases.length, 'purchases');
+        });
 
         // Credits listener
-        db.collection('businesses').doc(currentBusiness).collection('credits')
-            .onSnapshot(snapshot => {
-                console.log('Credits updated:', snapshot.size, 'credits');
-                const credits = [];
-                snapshot.forEach(doc => {
-                    credits.push({ id: doc.id, ...doc.data() });
-                });
-                updateCreditsData(credits);
-            }, error => {
-                console.error('Error listening to credits:', error);
+        database.ref('businesses/' + currentBusiness + '/credits').on('value', (snapshot) => {
+            const credits = [];
+            snapshot.forEach((childSnapshot) => {
+                credits.push({ id: childSnapshot.key, ...childSnapshot.val() });
             });
+            console.log('Credits updated:', credits.length, 'credits');
+        });
 
         // Debits listener
-        db.collection('businesses').doc(currentBusiness).collection('debits')
-            .onSnapshot(snapshot => {
-                console.log('Debits updated:', snapshot.size, 'debits');
-                const debits = [];
-                snapshot.forEach(doc => {
-                    debits.push({ id: doc.id, ...doc.data() });
-                });
-                updateDebitsData(debits);
-            }, error => {
-                console.error('Error listening to debits:', error);
+        database.ref('businesses/' + currentBusiness + '/debits').on('value', (snapshot) => {
+            const debits = [];
+            snapshot.forEach((childSnapshot) => {
+                debits.push({ id: childSnapshot.key, ...childSnapshot.val() });
             });
-
-        // Events listener
-        db.collection('businesses').doc(currentBusiness).collection('events')
-            .onSnapshot(snapshot => {
-                console.log('Events updated:', snapshot.size, 'events');
-                const events = [];
-                snapshot.forEach(doc => {
-                    events.push({ id: doc.id, ...doc.data() });
-                });
-                updateEventsData(events);
-            }, error => {
-                console.error('Error listening to events:', error);
-            });
+            console.log('Debits updated:', debits.length, 'debits');
+        });
     }
 
     function updateInventoryTable(products) {
@@ -3206,14 +2967,14 @@
         
         tasks.filter(task => {
             if (!task.dueDate) return false;
-            const taskDate = task.dueDate.toDate ? task.dueDate.toDate() : new Date(task.dueDate);
+            const taskDate = new Date(task.dueDate);
             taskDate.setHours(0, 0, 0, 0);
             return taskDate.getTime() === today.getTime();
         }).forEach(task => {
             const taskDiv = document.createElement('div');
             taskDiv.className = `task-item ${task.completed ? 'completed' : ''} slide-in-left`;
             
-            const dueDate = task.dueDate.toDate ? task.dueDate.toDate() : new Date(task.dueDate);
+            const dueDate = new Date(task.dueDate);
             const timeString = dueDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             
             taskDiv.innerHTML = `
@@ -3227,7 +2988,7 @@
     }
 
     function updateSalesData(sales) {
-        // Update best sellers and slow moving products
+        // Update best sellers
         const productSales = {};
         
         sales.forEach(sale => {
@@ -3275,7 +3036,7 @@
     function initializeCharts() {
         const salesCtx = document.getElementById('salesChart');
         if (salesCtx) {
-            salesChart = new Chart(salesCtx.getContext('2d'), {
+            new Chart(salesCtx.getContext('2d'), {
                 type: 'line',
                 data: {
                     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
@@ -3297,7 +3058,7 @@
 
         const inventoryCtx = document.getElementById('inventoryChart');
         if (inventoryCtx) {
-            inventoryChart = new Chart(inventoryCtx.getContext('2d'), {
+            window.inventoryChart = new Chart(inventoryCtx.getContext('2d'), {
                 type: 'doughnut',
                 data: {
                     labels: ['Low Stock', 'Medium Stock', 'High Stock'],
@@ -3319,62 +3080,576 @@
     }
 
     function updateCharts(products) {
-        if (!inventoryChart) return;
+        if (!window.inventoryChart) return;
         
         // Update inventory chart based on actual product status
         const lowStock = products.filter(p => p.stock < 10).length;
         const mediumStock = products.filter(p => p.stock >= 10 && p.stock < 25).length;
         const highStock = products.filter(p => p.stock >= 25).length;
         
-        inventoryChart.data.datasets[0].data = [lowStock, mediumStock, highStock];
-        inventoryChart.update();
+        window.inventoryChart.data.datasets[0].data = [lowStock, mediumStock, highStock];
+        window.inventoryChart.update();
+    }
+
+    // Section Data Loading
+    function loadInventorySection() {
+        database.ref('businesses/' + currentBusiness + '/products').once('value').then((snapshot) => {
+            const products = [];
+            snapshot.forEach((childSnapshot) => {
+                products.push({ id: childSnapshot.key, ...childSnapshot.val() });
+            });
+            
+            const inventoryFullList = document.getElementById('inventoryFullList');
+            if (inventoryFullList) {
+                inventoryFullList.innerHTML = '';
+                
+                products.forEach(product => {
+                    const statusClass = product.stock < 10 ? 'badge-danger' : 
+                                      product.stock < 25 ? 'badge-warning' : 'badge-success';
+                    const statusText = product.stock < 10 ? 'Low' : 
+                                     product.stock < 25 ? 'Medium' : 'Good';
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${product.name}</td>
+                        <td>${product.category}</td>
+                        <td>${product.stock}</td>
+                        <td>₦${product.costPrice?.toLocaleString() || '0'}</td>
+                        <td>₦${product.sellingPrice?.toLocaleString() || '0'}</td>
+                        <td><span class="badge ${statusClass}">${statusText}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="editProduct('${product.id}')"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteProduct('${product.id}')"><i class="fas fa-trash"></i></button>
+                        </td>
+                    `;
+                    inventoryFullList.appendChild(row);
+                });
+            }
+            
+            // Update inventory stats
+            if (document.getElementById('inventoryTotalProducts')) {
+                document.getElementById('inventoryTotalProducts').textContent = products.length;
+            }
+            if (document.getElementById('inventoryLowStock')) {
+                document.getElementById('inventoryLowStock').textContent = products.filter(p => p.stock < 10).length;
+            }
+            if (document.getElementById('inventoryOutOfStock')) {
+                document.getElementById('inventoryOutOfStock').textContent = products.filter(p => p.stock === 0).length;
+            }
+        });
+    }
+
+    function loadSalesSection() {
+        database.ref('businesses/' + currentBusiness + '/sales').once('value').then((snapshot) => {
+            const sales = [];
+            snapshot.forEach((childSnapshot) => {
+                sales.push({ id: childSnapshot.key, ...childSnapshot.val() });
+            });
+            
+            const salesList = document.getElementById('salesList');
+            if (salesList) {
+                salesList.innerHTML = '';
+                
+                // Calculate sales totals
+                const today = new Date().toDateString();
+                const todaySales = sales.filter(sale => new Date(sale.saleDate).toDateString() === today)
+                    .reduce((sum, sale) => sum + sale.totalAmount, 0);
+                
+                const weekSales = sales.filter(sale => {
+                    const saleDate = new Date(sale.saleDate);
+                    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+                    return saleDate >= weekAgo;
+                }).reduce((sum, sale) => sum + sale.totalAmount, 0);
+                
+                const monthSales = sales.filter(sale => {
+                    const saleDate = new Date(sale.saleDate);
+                    const monthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+                    return saleDate >= monthAgo;
+                }).reduce((sum, sale) => sum + sale.totalAmount, 0);
+                
+                const totalSales = sales.reduce((sum, sale) => sum + sale.totalAmount, 0);
+                
+                // Update sales cards
+                if (document.getElementById('salesToday')) document.getElementById('salesToday').textContent = `₦${todaySales.toLocaleString()}`;
+                if (document.getElementById('salesWeek')) document.getElementById('salesWeek').textContent = `₦${weekSales.toLocaleString()}`;
+                if (document.getElementById('salesMonth')) document.getElementById('salesMonth').textContent = `₦${monthSales.toLocaleString()}`;
+                if (document.getElementById('salesTotal')) document.getElementById('salesTotal').textContent = `₦${totalSales.toLocaleString()}`;
+                
+                // Populate sales table
+                sales.forEach(sale => {
+                    const row = document.createElement('tr');
+                    const saleDate = new Date(sale.saleDate);
+                    row.innerHTML = `
+                        <td>${saleDate.toLocaleDateString()}</td>
+                        <td>${sale.productId}</td>
+                        <td>${sale.quantity}</td>
+                        <td>₦${sale.unitPrice?.toLocaleString() || '0'}</td>
+                        <td>₦${sale.totalAmount?.toLocaleString() || '0'}</td>
+                        <td>${sale.customer || 'Walk-in'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteSale('${sale.id}')"><i class="fas fa-trash"></i></button>
+                        </td>
+                    `;
+                    salesList.appendChild(row);
+                });
+            }
+        });
+    }
+
+    function loadPurchasesSection() {
+        database.ref('businesses/' + currentBusiness + '/purchases').once('value').then((snapshot) => {
+            const purchases = [];
+            snapshot.forEach((childSnapshot) => {
+                purchases.push({ id: childSnapshot.key, ...childSnapshot.val() });
+            });
+            
+            const purchasesList = document.getElementById('purchasesList');
+            if (purchasesList) {
+                purchasesList.innerHTML = '';
+                
+                purchases.forEach(purchase => {
+                    const row = document.createElement('tr');
+                    const purchaseDate = new Date(purchase.purchaseDate);
+                    row.innerHTML = `
+                        <td>${purchaseDate.toLocaleDateString()}</td>
+                        <td>${purchase.productName}</td>
+                        <td>${purchase.quantity}</td>
+                        <td>₦${purchase.unitCost?.toLocaleString() || '0'}</td>
+                        <td>₦${purchase.totalCost?.toLocaleString() || '0'}</td>
+                        <td>${purchase.supplier || 'N/A'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deletePurchase('${purchase.id}')"><i class="fas fa-trash"></i></button>
+                        </td>
+                    `;
+                    purchasesList.appendChild(row);
+                });
+            }
+        });
+    }
+
+    function loadFinanceSection() {
+        Promise.all([
+            database.ref('businesses/' + currentBusiness + '/credits').once('value'),
+            database.ref('businesses/' + currentBusiness + '/debits').once('value')
+        ]).then(([creditsSnapshot, debitsSnapshot]) => {
+            const credits = [];
+            creditsSnapshot.forEach((childSnapshot) => {
+                credits.push({ id: childSnapshot.key, ...childSnapshot.val() });
+            });
+            
+            const debits = [];
+            debitsSnapshot.forEach((childSnapshot) => {
+                debits.push({ id: childSnapshot.key, ...childSnapshot.val() });
+            });
+            
+            // Calculate totals
+            const totalCredits = credits.reduce((sum, credit) => sum + credit.amount, 0);
+            const totalDebits = debits.reduce((sum, debit) => sum + debit.amount, 0);
+            const netBalance = totalCredits - totalDebits;
+            
+            // Update finance cards
+            if (document.getElementById('totalCredits')) document.getElementById('totalCredits').textContent = `₦${totalCredits.toLocaleString()}`;
+            if (document.getElementById('totalDebits')) document.getElementById('totalDebits').textContent = `₦${totalDebits.toLocaleString()}`;
+            if (document.getElementById('netBalance')) document.getElementById('netBalance').textContent = `₦${netBalance.toLocaleString()}`;
+            
+            // Populate credits table
+            const creditsList = document.getElementById('creditsList');
+            if (creditsList) {
+                creditsList.innerHTML = '';
+                credits.forEach(credit => {
+                    const row = document.createElement('tr');
+                    const creditDate = new Date(credit.creditDate);
+                    row.innerHTML = `
+                        <td>${creditDate.toLocaleDateString()}</td>
+                        <td>${credit.description}</td>
+                        <td>₦${credit.amount?.toLocaleString() || '0'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteCredit('${credit.id}')"><i class="fas fa-trash"></i></button>
+                        </td>
+                    `;
+                    creditsList.appendChild(row);
+                });
+            }
+            
+            // Populate debits table
+            const debitsList = document.getElementById('debitsList');
+            if (debitsList) {
+                debitsList.innerHTML = '';
+                debits.forEach(debit => {
+                    const row = document.createElement('tr');
+                    const debitDate = new Date(debit.debitDate);
+                    row.innerHTML = `
+                        <td>${debitDate.toLocaleDateString()}</td>
+                        <td>${debit.description}</td>
+                        <td>₦${debit.amount?.toLocaleString() || '0'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteDebit('${debit.id}')"><i class="fas fa-trash"></i></button>
+                        </td>
+                    `;
+                    debitsList.appendChild(row);
+                });
+            }
+        });
+    }
+
+    function loadTasksSection() {
+        database.ref('businesses/' + currentBusiness + '/tasks').once('value').then((snapshot) => {
+            const tasks = [];
+            snapshot.forEach((childSnapshot) => {
+                tasks.push({ id: childSnapshot.key, ...childSnapshot.val() });
+            });
+            
+            const tasksFullList = document.getElementById('tasksFullList');
+            if (tasksFullList) {
+                tasksFullList.innerHTML = '';
+                
+                tasks.forEach(task => {
+                    const row = document.createElement('tr');
+                    const dueDate = new Date(task.dueDate);
+                    const priorityClass = task.priority === 'high' ? 'badge-danger' : 
+                                        task.priority === 'medium' ? 'badge-warning' : 'badge-secondary';
+                    const statusClass = task.completed ? 'badge-success' : 'badge-warning';
+                    const statusText = task.completed ? 'Completed' : 'Pending';
+                    
+                    row.innerHTML = `
+                        <td>${task.title}</td>
+                        <td>${task.description || '-'}</td>
+                        <td>${dueDate.toLocaleDateString()}</td>
+                        <td><span class="badge ${priorityClass}">${task.priority}</span></td>
+                        <td><span class="badge ${statusClass}">${statusText}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-success" onclick="completeTask('${task.id}')"><i class="fas fa-check"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteTask('${task.id}')"><i class="fas fa-trash"></i></button>
+                        </td>
+                    `;
+                    tasksFullList.appendChild(row);
+                });
+            }
+            
+            // Update task stats
+            if (document.getElementById('totalTasks')) document.getElementById('totalTasks').textContent = tasks.length;
+            if (document.getElementById('pendingTasks')) document.getElementById('pendingTasks').textContent = tasks.filter(t => !t.completed).length;
+            if (document.getElementById('completedTasks')) document.getElementById('completedTasks').textContent = tasks.filter(t => t.completed).length;
+            if (document.getElementById('overdueTasks')) {
+                const overdue = tasks.filter(t => !t.completed && new Date(t.dueDate) < new Date());
+                document.getElementById('overdueTasks').textContent = overdue.length;
+            }
+        });
+    }
+
+    function loadBuyListSection() {
+        database.ref('businesses/' + currentBusiness + '/buyList').once('value').then((snapshot) => {
+            const buyList = [];
+            snapshot.forEach((childSnapshot) => {
+                buyList.push({ id: childSnapshot.key, ...childSnapshot.val() });
+            });
+            
+            const buyListFull = document.getElementById('buyListFull');
+            if (buyListFull) {
+                buyListFull.innerHTML = '';
+                
+                buyList.forEach(item => {
+                    const row = document.createElement('tr');
+                    const priorityClass = item.priority === 'high' ? 'badge-danger' : 
+                                        item.priority === 'medium' ? 'badge-warning' : 'badge-secondary';
+                    const statusClass = item.completed ? 'badge-success' : 'badge-warning';
+                    const statusText = item.completed ? 'Completed' : 'Pending';
+                    
+                    row.innerHTML = `
+                        <td>${item.name}</td>
+                        <td>${item.quantity}</td>
+                        <td><span class="badge ${priorityClass}">${item.priority}</span></td>
+                        <td><span class="badge ${statusClass}">${statusText}</span></td>
+                        <td>${new Date(item.createdAt).toLocaleDateString()}</td>
+                        <td>
+                            <button class="btn btn-sm btn-success" onclick="completeBuyListItem('${item.id}')"><i class="fas fa-check"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteBuyListItem('${item.id}')"><i class="fas fa-trash"></i></button>
+                        </td>
+                    `;
+                    buyListFull.appendChild(row);
+                });
+            }
+            
+            // Update buy list stats
+            if (document.getElementById('totalBuyItems')) document.getElementById('totalBuyItems').textContent = buyList.length;
+            if (document.getElementById('highPriorityItems')) document.getElementById('highPriorityItems').textContent = buyList.filter(i => i.priority === 'high').length;
+            if (document.getElementById('completedBuyItems')) document.getElementById('completedBuyItems').textContent = buyList.filter(i => i.completed).length;
+        });
+    }
+
+    // Form Handlers
+    async function addItemHandler() {
+        const itemName = document.getElementById('itemName').value;
+        const itemQuantity = document.getElementById('itemQuantity').value;
+        const itemPriority = document.getElementById('itemPriority').value;
+        
+        if (itemName && itemQuantity) {
+            try {
+                const itemRef = database.ref('businesses/' + currentBusiness + '/buyList').push();
+                await itemRef.set({
+                    name: itemName,
+                    quantity: parseInt(itemQuantity),
+                    priority: itemPriority,
+                    completed: false,
+                    createdAt: Date.now(),
+                    createdBy: currentUser.uid
+                });
+                showAlert('Item added to buy list!', 'success');
+                $('#addItemModal').modal('hide');
+                document.getElementById('addItemForm').reset();
+            } catch (error) {
+                console.error('Error adding item:', error);
+                showAlert('Failed to add item: ' + error.message, 'danger');
+            }
+        } else {
+            showAlert('Please fill in all fields', 'warning');
+        }
+    }
+
+    async function addProductHandler() {
+        const productName = document.getElementById('productName').value;
+        const productCategory = document.getElementById('productCategory').value;
+        const productStock = parseInt(document.getElementById('productStock').value);
+        const productPrice = parseFloat(document.getElementById('productPrice').value);
+        const productCost = parseFloat(document.getElementById('productCost').value);
+        
+        if (productName && productCategory && productStock && productPrice && productCost) {
+            try {
+                const productRef = database.ref('businesses/' + currentBusiness + '/products').push();
+                await productRef.set({
+                    name: productName,
+                    category: productCategory,
+                    stock: productStock,
+                    sellingPrice: productPrice,
+                    costPrice: productCost,
+                    minStock: 10,
+                    createdAt: Date.now(),
+                    createdBy: currentUser.uid
+                });
+                showAlert('Product added successfully!', 'success');
+                $('#addProductModal').modal('hide');
+                document.getElementById('addProductForm').reset();
+            } catch (error) {
+                console.error('Error adding product:', error);
+                showAlert('Failed to add product: ' + error.message, 'danger');
+            }
+        } else {
+            showAlert('Please fill in all fields', 'warning');
+        }
+    }
+
+    async function updateProductHandler() {
+        const productId = document.getElementById('editProductId').value;
+        const productName = document.getElementById('editProductName').value;
+        const productCategory = document.getElementById('editProductCategory').value;
+        const productStock = parseInt(document.getElementById('editProductStock').value);
+        const productPrice = parseFloat(document.getElementById('editProductPrice').value);
+        const productCost = parseFloat(document.getElementById('editProductCost').value);
+        
+        if (productName && productCategory && productStock && productPrice && productCost) {
+            try {
+                await database.ref('businesses/' + currentBusiness + '/products/' + productId).update({
+                    name: productName,
+                    category: productCategory,
+                    stock: productStock,
+                    sellingPrice: productPrice,
+                    costPrice: productCost,
+                    updatedAt: Date.now()
+                });
+                showAlert('Product updated successfully!', 'success');
+                $('#editProductModal').modal('hide');
+            } catch (error) {
+                console.error('Error updating product:', error);
+                showAlert('Failed to update product: ' + error.message, 'danger');
+            }
+        } else {
+            showAlert('Please fill in all fields', 'warning');
+        }
+    }
+
+    async function addTaskHandler() {
+        const taskTitle = document.getElementById('taskTitle').value;
+        const taskDescription = document.getElementById('taskDescription').value;
+        const taskDueDate = document.getElementById('taskDueDate').value;
+        const taskPriority = document.getElementById('taskPriority').value;
+        
+        if (taskTitle && taskDueDate) {
+            try {
+                const taskRef = database.ref('businesses/' + currentBusiness + '/tasks').push();
+                await taskRef.set({
+                    title: taskTitle,
+                    description: taskDescription,
+                    dueDate: new Date(taskDueDate).getTime(),
+                    priority: taskPriority,
+                    completed: false,
+                    createdAt: Date.now(),
+                    createdBy: currentUser.uid
+                });
+                showAlert('Task added successfully!', 'success');
+                $('#addTaskModal').modal('hide');
+                document.getElementById('addTaskForm').reset();
+            } catch (error) {
+                console.error('Error adding task:', error);
+                showAlert('Failed to add task: ' + error.message, 'danger');
+            }
+        } else {
+            showAlert('Please fill in all fields', 'warning');
+        }
+    }
+
+    async function addSaleHandler() {
+        const productId = document.getElementById('saleProduct').value;
+        const quantity = parseInt(document.getElementById('saleQuantity').value);
+        const unitPrice = parseFloat(document.getElementById('saleUnitPrice').value);
+        const customer = document.getElementById('saleCustomer').value;
+        const saleDate = document.getElementById('saleDate').value;
+        
+        if (productId && quantity && unitPrice && saleDate) {
+            try {
+                const saleRef = database.ref('businesses/' + currentBusiness + '/sales').push();
+                await saleRef.set({
+                    productId: productId,
+                    quantity: quantity,
+                    unitPrice: unitPrice,
+                    totalAmount: unitPrice * quantity,
+                    customer: customer,
+                    saleDate: new Date(saleDate).getTime(),
+                    createdAt: Date.now(),
+                    createdBy: currentUser.uid
+                });
+                showAlert('Sale recorded successfully!', 'success');
+                $('#addSaleModal').modal('hide');
+                document.getElementById('addSaleForm').reset();
+            } catch (error) {
+                console.error('Error adding sale:', error);
+                showAlert('Failed to record sale: ' + error.message, 'danger');
+            }
+        } else {
+            showAlert('Please fill in all fields', 'warning');
+        }
+    }
+
+    async function addPurchaseHandler() {
+        const productName = document.getElementById('purchaseProduct').value;
+        const quantity = parseInt(document.getElementById('purchaseQuantity').value);
+        const unitCost = parseFloat(document.getElementById('purchaseUnitCost').value);
+        const supplier = document.getElementById('purchaseSupplier').value;
+        const purchaseDate = document.getElementById('purchaseDate').value;
+        
+        if (productName && quantity && unitCost && purchaseDate) {
+            try {
+                const purchaseRef = database.ref('businesses/' + currentBusiness + '/purchases').push();
+                await purchaseRef.set({
+                    productName: productName,
+                    quantity: quantity,
+                    unitCost: unitCost,
+                    totalCost: unitCost * quantity,
+                    supplier: supplier,
+                    purchaseDate: new Date(purchaseDate).getTime(),
+                    createdAt: Date.now(),
+                    createdBy: currentUser.uid
+                });
+                showAlert('Purchase recorded successfully!', 'success');
+                $('#addPurchaseModal').modal('hide');
+                document.getElementById('addPurchaseForm').reset();
+            } catch (error) {
+                console.error('Error adding purchase:', error);
+                showAlert('Failed to record purchase: ' + error.message, 'danger');
+            }
+        } else {
+            showAlert('Please fill in all fields', 'warning');
+        }
+    }
+
+    async function addCreditHandler() {
+        const description = document.getElementById('creditDescription').value;
+        const amount = parseFloat(document.getElementById('creditAmount').value);
+        const creditDate = document.getElementById('creditDate').value;
+        
+        if (description && amount && creditDate) {
+            try {
+                const creditRef = database.ref('businesses/' + currentBusiness + '/credits').push();
+                await creditRef.set({
+                    description: description,
+                    amount: amount,
+                    creditDate: new Date(creditDate).getTime(),
+                    createdAt: Date.now(),
+                    createdBy: currentUser.uid
+                });
+                showAlert('Credit added successfully!', 'success');
+                $('#addCreditModal').modal('hide');
+                document.getElementById('addCreditForm').reset();
+            } catch (error) {
+                console.error('Error adding credit:', error);
+                showAlert('Failed to add credit: ' + error.message, 'danger');
+            }
+        } else {
+            showAlert('Please fill in all fields', 'warning');
+        }
+    }
+
+    async function addDebitHandler() {
+        const description = document.getElementById('debitDescription').value;
+        const amount = parseFloat(document.getElementById('debitAmount').value);
+        const debitDate = document.getElementById('debitDate').value;
+        
+        if (description && amount && debitDate) {
+            try {
+                const debitRef = database.ref('businesses/' + currentBusiness + '/debits').push();
+                await debitRef.set({
+                    description: description,
+                    amount: amount,
+                    debitDate: new Date(debitDate).getTime(),
+                    createdAt: Date.now(),
+                    createdBy: currentUser.uid
+                });
+                showAlert('Debit added successfully!', 'success');
+                $('#addDebitModal').modal('hide');
+                document.getElementById('addDebitForm').reset();
+            } catch (error) {
+                console.error('Error adding debit:', error);
+                showAlert('Failed to add debit: ' + error.message, 'danger');
+            }
+        } else {
+            showAlert('Please fill in all fields', 'warning');
+        }
+    }
+
+    async function addEventHandler() {
+        const title = document.getElementById('eventTitle').value;
+        const description = document.getElementById('eventDescription').value;
+        const startDate = document.getElementById('eventStartDate').value;
+        const endDate = document.getElementById('eventEndDate').value;
+        
+        if (title && startDate && endDate) {
+            try {
+                const eventRef = database.ref('businesses/' + currentBusiness + '/events').push();
+                await eventRef.set({
+                    title: title,
+                    description: description,
+                    startDate: new Date(startDate).getTime(),
+                    endDate: new Date(endDate).getTime(),
+                    createdAt: Date.now(),
+                    createdBy: currentUser.uid
+                });
+                showAlert('Event added successfully!', 'success');
+                $('#addEventModal').modal('hide');
+                document.getElementById('addEventForm').reset();
+            } catch (error) {
+                console.error('Error adding event:', error);
+                showAlert('Failed to add event: ' + error.message, 'danger');
+            }
+        } else {
+            showAlert('Please fill in all fields', 'warning');
+        }
     }
 
     // CRUD Operations
-    async function addProduct(name, category, stock, price, cost) {
-        try {
-            console.log('Adding product:', name);
-            await db.collection('businesses').doc(currentBusiness).collection('products').add({
-                name,
-                category,
-                stock: parseInt(stock),
-                sellingPrice: parseFloat(price),
-                costPrice: parseFloat(cost),
-                minStock: 10,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                createdBy: currentUser.uid
-            });
-            showAlert('Product added successfully!', 'success');
-        } catch (error) {
-            console.error('Error adding product:', error);
-            showAlert('Failed to add product: ' + error.message, 'danger');
-        }
-    }
-
-    async function updateProduct(id, name, category, stock, price, cost) {
-        try {
-            console.log('Updating product:', id);
-            await db.collection('businesses').doc(currentBusiness).collection('products').doc(id).update({
-                name,
-                category,
-                stock: parseInt(stock),
-                sellingPrice: parseFloat(price),
-                costPrice: parseFloat(cost),
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            showAlert('Product updated successfully!', 'success');
-        } catch (error) {
-            console.error('Error updating product:', error);
-            showAlert('Failed to update product: ' + error.message, 'danger');
-        }
-    }
-
     async function editProduct(id) {
         try {
-            console.log('Editing product:', id);
-            const doc = await db.collection('businesses').doc(currentBusiness).collection('products').doc(id).get();
-            if (doc.exists) {
-                const product = doc.data();
+            const snapshot = await database.ref('businesses/' + currentBusiness + '/products/' + id).once('value');
+            if (snapshot.exists()) {
+                const product = snapshot.val();
                 
                 document.getElementById('editProductId').value = id;
                 document.getElementById('editProductName').value = product.name;
@@ -3399,8 +3674,7 @@
             'Are you sure you want to delete this product? This action cannot be undone.',
             async () => {
                 try {
-                    console.log('Deleting product:', id);
-                    await db.collection('businesses').doc(currentBusiness).collection('products').doc(id).delete();
+                    await database.ref('businesses/' + currentBusiness + '/products/' + id).remove();
                     showAlert('Product deleted successfully!', 'success');
                 } catch (error) {
                     console.error('Error deleting product:', error);
@@ -3410,141 +3684,11 @@
         );
     }
 
-    async function addBuyListItem(name, quantity, priority) {
-        try {
-            console.log('Adding buy list item:', name);
-            await db.collection('businesses').doc(currentBusiness).collection('buyList').add({
-                name,
-                quantity: parseInt(quantity),
-                priority,
-                completed: false,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                createdBy: currentUser.uid
-            });
-            showAlert('Item added to buy list!', 'success');
-        } catch (error) {
-            console.error('Error adding buy list item:', error);
-            showAlert('Failed to add item: ' + error.message, 'danger');
-        }
-    }
-
-    async function addTask(title, description, dueDate, priority) {
-        try {
-            console.log('Adding task:', title);
-            await db.collection('businesses').doc(currentBusiness).collection('tasks').add({
-                title,
-                description,
-                dueDate: firebase.firestore.Timestamp.fromDate(new Date(dueDate)),
-                priority,
-                completed: false,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                createdBy: currentUser.uid
-            });
-            showAlert('Task added successfully!', 'success');
-        } catch (error) {
-            console.error('Error adding task:', error);
-            showAlert('Failed to add task: ' + error.message, 'danger');
-        }
-    }
-
-    async function addSale(productId, quantity, unitPrice, customer, saleDate) {
-        try {
-            console.log('Adding sale for product:', productId);
-            await db.collection('businesses').doc(currentBusiness).collection('sales').add({
-                productId,
-                quantity: parseInt(quantity),
-                unitPrice: parseFloat(unitPrice),
-                totalAmount: parseFloat(unitPrice) * parseInt(quantity),
-                customer,
-                saleDate: firebase.firestore.Timestamp.fromDate(new Date(saleDate)),
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                createdBy: currentUser.uid
-            });
-            showAlert('Sale recorded successfully!', 'success');
-        } catch (error) {
-            console.error('Error adding sale:', error);
-            showAlert('Failed to record sale: ' + error.message, 'danger');
-        }
-    }
-
-    async function addPurchase(productName, quantity, unitCost, supplier, purchaseDate) {
-        try {
-            console.log('Adding purchase:', productName);
-            await db.collection('businesses').doc(currentBusiness).collection('purchases').add({
-                productName,
-                quantity: parseInt(quantity),
-                unitCost: parseFloat(unitCost),
-                totalCost: parseFloat(unitCost) * parseInt(quantity),
-                supplier,
-                purchaseDate: firebase.firestore.Timestamp.fromDate(new Date(purchaseDate)),
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                createdBy: currentUser.uid
-            });
-            showAlert('Purchase recorded successfully!', 'success');
-        } catch (error) {
-            console.error('Error adding purchase:', error);
-            showAlert('Failed to record purchase: ' + error.message, 'danger');
-        }
-    }
-
-    async function addCredit(description, amount, creditDate) {
-        try {
-            console.log('Adding credit:', description);
-            await db.collection('businesses').doc(currentBusiness).collection('credits').add({
-                description,
-                amount: parseFloat(amount),
-                creditDate: firebase.firestore.Timestamp.fromDate(new Date(creditDate)),
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                createdBy: currentUser.uid
-            });
-            showAlert('Credit added successfully!', 'success');
-        } catch (error) {
-            console.error('Error adding credit:', error);
-            showAlert('Failed to add credit: ' + error.message, 'danger');
-        }
-    }
-
-    async function addDebit(description, amount, debitDate) {
-        try {
-            console.log('Adding debit:', description);
-            await db.collection('businesses').doc(currentBusiness).collection('debits').add({
-                description,
-                amount: parseFloat(amount),
-                debitDate: firebase.firestore.Timestamp.fromDate(new Date(debitDate)),
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                createdBy: currentUser.uid
-            });
-            showAlert('Debit added successfully!', 'success');
-        } catch (error) {
-            console.error('Error adding debit:', error);
-            showAlert('Failed to add debit: ' + error.message, 'danger');
-        }
-    }
-
-    async function addEvent(title, description, startDate, endDate) {
-        try {
-            console.log('Adding event:', title);
-            await db.collection('businesses').doc(currentBusiness).collection('events').add({
-                title,
-                description,
-                startDate: firebase.firestore.Timestamp.fromDate(new Date(startDate)),
-                endDate: firebase.firestore.Timestamp.fromDate(new Date(endDate)),
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                createdBy: currentUser.uid
-            });
-            showAlert('Event added successfully!', 'success');
-        } catch (error) {
-            console.error('Error adding event:', error);
-            showAlert('Failed to add event: ' + error.message, 'danger');
-        }
-    }
-
     async function completeBuyListItem(id) {
         try {
-            console.log('Completing buy list item:', id);
-            await db.collection('businesses').doc(currentBusiness).collection('buyList').doc(id).update({
+            await database.ref('businesses/' + currentBusiness + '/buyList/' + id).update({
                 completed: true,
-                completedAt: firebase.firestore.FieldValue.serverTimestamp()
+                completedAt: Date.now()
             });
             showAlert('Item marked as completed!', 'success');
         } catch (error) {
@@ -3559,8 +3703,7 @@
             'Are you sure you want to delete this item from the buy list?',
             async () => {
                 try {
-                    console.log('Deleting buy list item:', id);
-                    await db.collection('businesses').doc(currentBusiness).collection('buyList').doc(id).delete();
+                    await database.ref('businesses/' + currentBusiness + '/buyList/' + id).remove();
                     showAlert('Item deleted successfully!', 'success');
                 } catch (error) {
                     console.error('Error deleting buy list item:', error);
@@ -3570,28 +3713,110 @@
         );
     }
 
-    // Data update functions for sections
-    function updatePurchasesData(purchases) {
-        console.log('Updating purchases data:', purchases.length, 'purchases');
+    async function completeTask(id) {
+        try {
+            await database.ref('businesses/' + currentBusiness + '/tasks/' + id).update({
+                completed: true,
+                completedAt: Date.now()
+            });
+            showAlert('Task marked as completed!', 'success');
+        } catch (error) {
+            console.error('Error completing task:', error);
+            showAlert('Failed to complete task: ' + error.message, 'danger');
+        }
     }
 
-    function updateCreditsData(credits) {
-        console.log('Updating credits data:', credits.length, 'credits');
+    async function deleteTask(id) {
+        showConfirmModal(
+            'Delete Task',
+            'Are you sure you want to delete this task?',
+            async () => {
+                try {
+                    await database.ref('businesses/' + currentBusiness + '/tasks/' + id).remove();
+                    showAlert('Task deleted successfully!', 'success');
+                } catch (error) {
+                    console.error('Error deleting task:', error);
+                    showAlert('Failed to delete task: ' + error.message, 'danger');
+                }
+            }
+        );
     }
 
-    function updateDebitsData(debits) {
-        console.log('Updating debits data:', debits.length, 'debits');
+    async function deleteSale(id) {
+        showConfirmModal(
+            'Delete Sale',
+            'Are you sure you want to delete this sale record?',
+            async () => {
+                try {
+                    await database.ref('businesses/' + currentBusiness + '/sales/' + id).remove();
+                    showAlert('Sale record deleted successfully!', 'success');
+                } catch (error) {
+                    console.error('Error deleting sale:', error);
+                    showAlert('Failed to delete sale: ' + error.message, 'danger');
+                }
+            }
+        );
     }
 
-    function updateEventsData(events) {
-        console.log('Updating events data:', events.length, 'events');
+    async function deletePurchase(id) {
+        showConfirmModal(
+            'Delete Purchase',
+            'Are you sure you want to delete this purchase record?',
+            async () => {
+                try {
+                    await database.ref('businesses/' + currentBusiness + '/purchases/' + id).remove();
+                    showAlert('Purchase record deleted successfully!', 'success');
+                } catch (error) {
+                    console.error('Error deleting purchase:', error);
+                    showAlert('Failed to delete purchase: ' + error.message, 'danger');
+                }
+            }
+        );
     }
 
-    // Make functions globally available for onclick handlers
+    async function deleteCredit(id) {
+        showConfirmModal(
+            'Delete Credit',
+            'Are you sure you want to delete this credit record?',
+            async () => {
+                try {
+                    await database.ref('businesses/' + currentBusiness + '/credits/' + id).remove();
+                    showAlert('Credit record deleted successfully!', 'success');
+                } catch (error) {
+                    console.error('Error deleting credit:', error);
+                    showAlert('Failed to delete credit: ' + error.message, 'danger');
+                }
+            }
+        );
+    }
+
+    async function deleteDebit(id) {
+        showConfirmModal(
+            'Delete Debit',
+            'Are you sure you want to delete this debit record?',
+            async () => {
+                try {
+                    await database.ref('businesses/' + currentBusiness + '/debits/' + id).remove();
+                    showAlert('Debit record deleted successfully!', 'success');
+                } catch (error) {
+                    console.error('Error deleting debit:', error);
+                    showAlert('Failed to delete debit: ' + error.message, 'danger');
+                }
+            }
+        );
+    }
+
+    // Make functions globally available
     window.editProduct = editProduct;
     window.deleteProduct = deleteProduct;
     window.completeBuyListItem = completeBuyListItem;
     window.deleteBuyListItem = deleteBuyListItem;
+    window.completeTask = completeTask;
+    window.deleteTask = deleteTask;
+    window.deleteSale = deleteSale;
+    window.deletePurchase = deletePurchase;
+    window.deleteCredit = deleteCredit;
+    window.deleteDebit = deleteDebit;
 </script>
 </body>
 </html>
